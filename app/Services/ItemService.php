@@ -1,0 +1,127 @@
+<?php
+
+namespace App\Services;
+
+use App\Models\Item;
+use Illuminate\Support\Facades\Auth;
+
+class ItemService
+{
+    protected $cohereService;
+
+    public function __construct(CohereService $cohereService)
+    {
+        $this->cohereService = $cohereService;
+    }
+    public function getAll()
+{
+    $query = Item::with('category')->where('is_approved', 1);
+    
+    // Kiểm tra xem người dùng có đăng nhập hay không
+    if (auth()->check()) {
+        $userId = auth()->id(); // Lấy ID của người dùng đăng nhập
+        $query->where('user_id', '!=', $userId); // Không lấy item của người dùng hiện tại
+    }
+
+    return $query->get();
+}
+
+    public function getWithPaginate()
+    {
+        return Item::with('category')->paginate(6);
+    }
+
+    public function getById($id)
+    {
+        return Item::findOrFail($id);
+    }
+    
+    public function getUserItem($id){
+        return Item::where('user_id',$id)->paginate(4);
+    }
+    public function create($data)
+    {
+        return Item::create($data);
+    }
+
+    public function update($id, $data)
+    {
+        $item = Item::findOrFail($id);
+        $item->update($data);
+        return $item;
+    }
+
+    public function delete($id)
+{
+    $item = Item::findOrFail($id);
+
+    // Cập nhật tất cả transaction liên quan thành 'rejected'
+    $item->transactions() // nếu bạn có quan hệ transactions()
+         ->whereIn('status', ['pending', 'accepted'])
+         ->update(['status' => 'rejected']);
+
+    // Soft delete item
+    return $item->delete();
+}
+public function search($params)
+{
+    $queryBuilder = Item::query();
+        $queryBuilder->where('is_approved', 1);
+
+if (Auth::check()) {
+        $userId = Auth::id();
+        $queryBuilder->where('user_id', '!=', $userId);
+    }
+    $queryBuilder->where('status', '!=', 'Taken');
+    // Các điều kiện lọc KHÁC (category, distance)
+    if (!empty($params['category_id'])) {
+        $queryBuilder->where('category_id', $params['category_id']);
+    }
+
+    if (!empty($params['latitude']) && !empty($params['longitude']) && !empty($params['distance'])) {
+        $latitude = $params['latitude'];
+        $longitude = $params['longitude'];
+        $distance = $params['distance'];
+
+        $queryBuilder->selectRaw("*, 
+            (6371 * ACOS(
+                COS(RADIANS(?)) * COS(RADIANS(JSON_UNQUOTE(JSON_EXTRACT(location, '$.lat')))) * 
+                COS(RADIANS(JSON_UNQUOTE(JSON_EXTRACT(location, '$.lng'))) - RADIANS(?)) + 
+                SIN(RADIANS(?)) * SIN(RADIANS(JSON_UNQUOTE(JSON_EXTRACT(location, '$.lat'))))
+            )) AS distance", [
+                $latitude, $longitude, $latitude
+            ])->having('distance', '<=', $distance);
+    }
+
+    // Lấy dữ liệu trước (có thể giới hạn để tối ưu)
+    $items = $queryBuilder->get();
+
+    if (!empty($params['search']) && $items->isNotEmpty()) {
+        $documents = $items->map(function ($item) {
+            return [
+                'id' => $item->id,
+                'text' => collect($item->getAttributes())->map(fn($v, $k) => "$k: $v")->implode(', '),
+            ];
+        })->values()->toArray();
+
+        try {
+            $reranked = $this->cohereService->rerank($params['search'], $documents);
+            $ids = array_column($reranked, 'id');
+
+            $items = Item::whereIn('id', $ids)->get()->sortBy(function ($item) use ($ids) {
+                return array_search($item->id, $ids);
+            })->values();
+        } catch (\Exception $e) {
+            \Log::error("Cohere error: " . $e->getMessage());
+        }
+    }
+
+    return $items;
+}
+
+
+
+
+    
+
+}
