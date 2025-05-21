@@ -47,6 +47,7 @@ class ItemService
     public function update($id, $data)
     {
         $item = Item::findOrFail($id);
+        $data['is_approved'] = 0; 
         $item->update($data);
         return $item;
     }

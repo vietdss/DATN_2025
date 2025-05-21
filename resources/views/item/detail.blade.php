@@ -14,7 +14,8 @@
       <i class="fas fa-chevron-right text-gray-400 mx-2"></i>
       </li>
       <li class="flex items-center">
-      <a href="{{ route('item.index', ['category_id' => $item->category->id]) }}" class="text-gray-500 hover:text-green-600">{{ $item->category->name }}</a>
+      <a href="{{ route('item.index', ['category_id' => $item->category->id]) }}"
+        class="text-gray-500 hover:text-green-600">{{ $item->category->name }}</a>
       <i class="fas fa-chevron-right text-gray-400 mx-2"></i>
       </li>
       <li class="text-gray-700">{{ $item->title }}</li>
@@ -27,14 +28,14 @@
       <!-- Image Gallery -->
       <div>
       <div class="mb-4">
-        <img src="{{ $item->images->first()->image_url}}" alt="{{ $item->title }}"
+        <img src="{{ optional($item->images->first())->image_url }}" alt="{{ $item->title }}"
         class="w-full h-80 object-cover rounded-lg" id="mainImage">
       </div>
       <div class="grid grid-cols-4 gap-2" id="thumbnails">
         @foreach ($item->images as $key => $image)
-      <img src="{{ $image->image_url }}" alt="{{ $item->title }} {{ $key + 1 }}"
+      <img src="{{ optional($image)->image_url }}" alt="{{ $item->title }} {{ $key + 1 }}"
       class="w-full h-20 object-cover rounded cursor-pointer {{ $key === 0 ? 'border-2 border-green-500' : 'hover:opacity-80' }}"
-      onclick="changeImage(this, '{{ $image->image_url }}')">
+      onclick="changeImage(this, '{{ optional($image)->image_url }}')">
       @endforeach
       </div>
       </div>
@@ -63,17 +64,17 @@
         <div class="flex items-center text-gray-500 mb-2">
         <i class="fas fa-cubes mr-2"></i>
         <span>Số lượng: {{ $item->quantity }}</span>
-    </div>
+        </div>
 
-    <!-- Ngày hết hạn -->
-    <div class="flex items-center text-gray-500 mb-2">
+        <!-- Ngày hết hạn -->
+        <div class="flex items-center text-gray-500 mb-2">
         <i class="fas fa-calendar-alt mr-2"></i>
-        <span>Ngày hết hạn: 
-           
-                {{ $item->expired_at->format('Y-m-d H:i') ??'Không có' }}
-   
+        <span>Ngày hết hạn:
+
+          {{ $item->expired_at->format('Y-m-d H:i') ?? 'Không có' }}
+
         </span>
-    </div>
+        </div>
         <div class="flex items-center text-gray-500 mb-2">
         <i class="fas fa-tag mr-2"></i>
         <span>{{ $item->status }}</span>
@@ -85,7 +86,8 @@
         <div class="flex items-center">
         <img src="{{ $item->user->profile_image }}" alt="Người đăng" class="w-12 h-12 rounded-full mr-4">
         <div>
-          <h3 class="font-semibold"><a href="{{ route('user.profile',$item->user->id) }}">{{ $item->user->name }}</a></h3>
+          <h3 class="font-semibold"><a
+            href="{{ route('user.profile', $item->user->id) }}">{{ $item->user->name }}</a></h3>
         </div>
         </div>
       </div>
@@ -107,38 +109,38 @@
       </button>
       </form>
       @else
-        <button onclick="window.location='{{ route('messages.show', ['userId' => $item->user_id]) }}'"
-        class="bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-4 rounded-md flex-1 flex justify-center items-center">
+      <button onclick="handleMessage({{ $item->user_id }})"
+      class="bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-4 rounded-md flex-1 flex justify-center items-center">
         <i class="fas fa-comment-alt mr-2"></i> Nhắn tin
         </button>
 
         <!-- Nút yêu cầu / hủy -->
         <div id="request-action" class="flex-1">
-  @if ($userTransaction && $userTransaction->status === 'completed')
-    <button
-      class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-md w-full flex justify-center items-center">
-      Yêu cầu đã hoàn thành
-    </button>
+        @if ($userTransaction && $userTransaction->status === 'completed')
+      <button
+        class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-md w-full flex justify-center items-center">
+        Yêu cầu đã hoàn thành
+      </button>
 
-  @elseif ($userTransaction && $userTransaction->status === 'rejected')
-    <button
-      class="bg-red-600 hover:bg-red-700 text-white font-medium py-2 px-4 rounded-md w-full flex justify-center items-center">
-      Yêu cầu bị từ chối
-    </button>
+      @elseif ($userTransaction && $userTransaction->status === 'rejected')
+      <button
+        class="bg-red-600 hover:bg-red-700 text-white font-medium py-2 px-4 rounded-md w-full flex justify-center items-center">
+        Yêu cầu bị từ chối
+      </button>
 
-  @elseif ($userTransaction)
-    <button onclick="cancelRequest({{ $item->id }})"
-      class="bg-red-600 hover:bg-red-700 text-white font-medium py-2 px-4 rounded-md w-full flex justify-center items-center">
-      <i class="fas fa-times mr-2"></i> Hủy yêu cầu
-    </button>
+      @elseif ($userTransaction)
+      <button onclick="cancelRequest({{ $item->id }})"
+        class="bg-red-600 hover:bg-red-700 text-white font-medium py-2 px-4 rounded-md w-full flex justify-center items-center">
+        <i class="fas fa-times mr-2"></i> Hủy yêu cầu
+      </button>
 
-  @else
-    <button onclick="openQuantityModal({{ $item->id }})"
-      class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-md w-full flex justify-center items-center">
-      <i class="fas fa-phone-alt mr-2"></i> Yêu cầu
-    </button>
-  @endif
-</div>
+      @else
+      <button onclick="openQuantityModal({{ $item->id }})"
+        class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-md w-full flex justify-center items-center">
+        <i class="fas fa-phone-alt mr-2"></i> Yêu cầu
+      </button>
+      @endif
+        </div>
 
       @endif
       </div>
@@ -166,7 +168,7 @@
 
       <div onclick="window.location='{{ route('item.detail', ['id' => $item->id]) }}'"
       class="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition duration-300 cursor-pointer">
-      <img src="{{ $item->images->first()->image_url}}" alt="Hình ảnh" class="w-full h-40 object-cover">
+      <img src="{{ optional($item->images->first())->image_url}}" alt="Hình ảnh" class="w-full h-40 object-cover">
       <div class="p-4">
       <span class="inline-block px-2 py-1 bg-green-100 text-green-800 text-xs font-semibold rounded mb-2">
       {{ $item->category->name ?? 'Không có danh mục' }}

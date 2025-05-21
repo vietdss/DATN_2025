@@ -125,7 +125,7 @@ class ItemController extends Controller
     public function update($id, Request $request)
     {
         $data = $request->all();
-        $this->itemService->update($id, $data);
+        $item = $this->itemService->update($id, $data);
         
         if ($request->filled('deleted_images')) {
             foreach ($request->input('deleted_images') as $imageId) {
@@ -139,6 +139,7 @@ class ItemController extends Controller
                 $this->imageService->uploadAndCreate($image, $id);
             }
         }
+        Mail::to('nguyenhoangviet251103@gmail.com')->send(new NewItemSubmitted($item));
 
         return redirect()->route('item.detail', ['id' => $id])->with('success', 'Cập nhật thành công!');
     }

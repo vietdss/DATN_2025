@@ -19,7 +19,8 @@ class Item extends Model
         'location',
         'quantity',
         'expired_at',
-        'status'
+        'status',
+        'is_approved'
     ];
     protected $casts = [
         'expired_at' => 'datetime',

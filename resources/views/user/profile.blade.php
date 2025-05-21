@@ -120,7 +120,7 @@
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4" id="itemsGrid">
                             @foreach($items as $item)
                                 <div class="item-card border rounded-lg overflow-hidden flex cursor-pointer"  onclick="window.location='{{ route('item.detail', ['id' => $item->id]) }}'">
-                                    <img src="{{ $item->images->first()->image_url}}"
+                                    <img src="{{ optional($item->images->first())->image_url}}"
                                         alt="{{ $item->title }}" class="w-24 h-24 object-cover">
                                     <div class="p-3 flex-1">
                                         <div class="flex justify-between">

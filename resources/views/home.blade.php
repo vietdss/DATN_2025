@@ -52,7 +52,7 @@
       @foreach($items as $item)
       <div onclick="window.location='{{ route('item.detail', ['id' => $item->id]) }}'"
       class="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition duration-300 cursor-pointer">
-      <img src="{{ $item->images->first()->image_url}}" alt="Hình ảnh" class="w-full h-40 object-cover">
+      <img src="{{ optional($item->images->first())->image_url }}" alt="Hình ảnh" class="w-full h-40 object-cover">
       <div class="p-4">
       <span class="inline-block px-2 py-1 bg-green-100 text-green-800 text-xs font-semibold rounded mb-2">
       {{ $item->category->name ?? 'Không có danh mục' }}

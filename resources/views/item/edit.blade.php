@@ -87,7 +87,7 @@
                             <div id="imagePreview" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
                                 @foreach($item->images as $image)
                                 <div class="existing-image relative group rounded-lg overflow-hidden shadow-sm border border-gray-200" style="aspect-ratio: 1/1;" data-id="{{ $image->id }}">
-                                    <img src="{{ $image->image_url }}" class="w-full h-full object-cover">
+                                    <img src="{{ optional($image)->image_url}}" class="w-full h-full object-cover">
                                     <div class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-30 transition-all duration-200"></div>
                                     <button type="button" class="delete-existing-image absolute top-2 right-2 bg-red-500 text-white rounded-full w-8 h-8 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shadow-md transform hover:scale-110">
                                         <i class="fas fa-trash"></i>

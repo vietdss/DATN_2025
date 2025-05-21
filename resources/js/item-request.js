@@ -39,9 +39,11 @@ export async function sendRequest(itemId, quantity) {
       showNotification(data.message, "success")
       changeToCancelButton(itemId)
       location.reload(); 
-
     } else {
       showNotification(data.message || "Đã xảy ra lỗi.", "error")
+      if (response.status == 404) {
+        location.reload()
+      }
     }
   } catch (e) {
     console.error(e)
