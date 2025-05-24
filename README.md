@@ -19,5 +19,5 @@
     - `php artisan migrate`
     - `php artisan db:seed`
     - `npm install`
-    - `php run dev`
+    - `npm run dev`
 - Config virtual host _(optional)_
