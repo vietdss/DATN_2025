@@ -218,7 +218,7 @@
       <div class="p-6 text-center">
         <h2 class="text-2xl font-bold mb-4">Vẫn còn thắc mắc?</h2>
         <p class="text-gray-700 mb-6 max-w-2xl mx-auto">Nếu bạn không tìm thấy câu trả lời cho câu hỏi của mình, đừng ngần ngại liên hệ với đội ngũ hỗ trợ của chúng tôi. Chúng tôi luôn sẵn sàng giúp đỡ bạn!</p>
-        <a href="contact.html" class="inline-block bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-6 rounded-md">
+        <a href="{{ route('contact') }}" class="inline-block bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-6 rounded-md">
           Liên hệ với chúng tôi
         </a>
       </div>

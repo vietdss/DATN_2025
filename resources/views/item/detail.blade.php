@@ -71,7 +71,7 @@
         <i class="fas fa-calendar-alt mr-2"></i>
         <span>Ngày hết hạn:
 
-          {{ $item->expired_at->format('Y-m-d H:i') ?? 'Không có' }}
+{{ $item->expired_at ? $item->expired_at->format('Y-m-d H:i') : 'Không có' }}
 
         </span>
         </div>
@@ -109,10 +109,10 @@
       </button>
       </form>
       @else
-      <button onclick="handleMessage({{ $item->user_id }})"
-      class="bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-4 rounded-md flex-1 flex justify-center items-center">
-        <i class="fas fa-comment-alt mr-2"></i> Nhắn tin
-        </button>
+    <button onclick="window.location.href='{{ route('messages.show', $item->user_id) }}'"
+class="bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-4 rounded-md flex-1 flex justify-center items-center">
+  <i class="fas fa-comment-alt mr-2"></i> Nhắn tin
+</button>
 
         <!-- Nút yêu cầu / hủy -->
         <div id="request-action" class="flex-1">
@@ -232,4 +232,36 @@
     </div>
     </div>
   </main>
+    <div id="quantityErrorModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 {{ session('error') ? '' : 'hidden' }}">
+    <div class="bg-white rounded-lg p-6 max-w-md w-full shadow-lg">
+        <div class="flex items-center mb-4">
+            <i class="fas fa-exclamation-triangle text-red-500 text-3xl mr-3"></i>
+            <h2 class="text-xl font-bold text-red-600">Không thể cập nhật sản phẩm</h2>
+        </div>
+        <div class="mb-6 text-gray-700">
+            {!! session('error') !!}
+        </div>
+        <div class="flex justify-end space-x-2">
+            <a href="{{ route('transactions.index') }}"
+               class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition">
+                Xử lý yêu cầu
+            </a>
+            <button type="button" onclick="closeQuantityErrorModal()" class="px-4 py-2 bg-gray-300 text-gray-800 rounded hover:bg-gray-400">
+                Đóng
+            </button>
+        </div>
+    </div>
+</div>
 @endsection
+
+@push('scripts')
+<script>
+function closeQuantityErrorModal() {
+    document.getElementById('quantityErrorModal').classList.add('hidden');
+}
+@if(session('error'))
+    // Tự động cuộn lên đầu trang khi có lỗi
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+@endif
+</script>
+@endpush

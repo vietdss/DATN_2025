@@ -109,8 +109,8 @@
         <h2 class="text-2xl md:text-3xl font-bold mb-4">Tham gia cùng chúng tôi</h2>
         <p class="text-lg mb-6 max-w-3xl mx-auto">Hãy trở thành một phần của cộng đồng ShareCycle và cùng nhau tạo nên sự thay đổi tích cực cho xã hội và môi trường.</p>
         <div class="flex flex-col sm:flex-row justify-center space-y-4 sm:space-y-0 sm:space-x-4">
-          <a href="register.html" class="bg-white text-green-600 hover:bg-green-100 font-semibold py-3 px-8 rounded-lg text-lg">Đăng ký miễn phí</a>
-          <a href="contact.html" class="bg-green-700 hover:bg-green-800 font-semibold py-3 px-8 rounded-lg text-lg">Liên hệ với chúng tôi</a>
+          <a href="{{ route('register') }}" class="bg-white text-green-600 hover:bg-green-100 font-semibold py-3 px-8 rounded-lg text-lg">Đăng ký miễn phí</a>
+          <a href="{{ route('contact') }}" class="bg-green-700 hover:bg-green-800 font-semibold py-3 px-8 rounded-lg text-lg">Liên hệ với chúng tôi</a>
         </div>
       </div>
     </div>

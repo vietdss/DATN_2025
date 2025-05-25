@@ -39,95 +39,110 @@ class TransactionController extends Controller
     return view('transactions.index', compact('transactions', 'sentTransactions'));
 }
 
-    public function store(Request $request, $id)
-    {
-        $item = Item::findOrFail($id);
+public function store(Request $request, $id)
+{
+    $item = Item::findOrFail($id);
+    if (!$item->is_approved) {
+        return response()->json(['message' => 'Bài đăng này đang chờ duyệt, không thể gửi yêu cầu.'], 403);
+    }
+    if ($item->user_id == Auth::id()) {
+        return response()->json(['message' => 'Bạn không thể yêu cầu chính bài đăng của mình.'], 403);
+    }
 
-        if ($item->user_id == Auth::id()) {
-            return response()->json(['message' => 'Bạn không thể yêu cầu chính bài đăng của mình.'], 403);
-        }
+    $existing = Transaction::where('post_id', $id)
+        ->where('receiver_id', Auth::id())
+        ->first();
 
-        $existing = Transaction::where('post_id', $id)
-            ->where('receiver_id', Auth::id())
-            ->first();
+    if ($existing) {
+        return response()->json(['message' => 'Bạn đã gửi yêu cầu trước đó.'], 409);
+    }
 
-        if ($existing) {
-            return response()->json(['message' => 'Bạn đã gửi yêu cầu trước đó.'], 409);
-        }
+    $quantity = (int) $request->input('quantity', 1);
 
-        $quantity = (int) $request->input('quantity', 1);
+    // Tính tổng số lượng đã được yêu cầu (pending + accepted chưa completed)
+    $requested = $item->transactions()
+        ->whereIn('status', ['pending', 'accepted'])
+        ->sum('quantity');
 
-        if ($item->quantity < $quantity) {
-            return response()->json(['message' => 'Không đủ số lượng khả dụng.'], 400);
-        }
+    $available = $item->quantity - $requested;
 
-        DB::transaction(function () use ($item, $quantity) {
-            Transaction::create([
-                'post_id' => $item->id,
-                'giver_id' => $item->user_id,
-                'receiver_id' => Auth::id(),
-                'status' => 'pending',
-                'quantity' => $quantity,
-            ]);
+    if ($available < $quantity) {
+        return response()->json(['message' => 'Không đủ số lượng khả dụng.'], 400);
+    }
 
-            $item->decrement('quantity', $quantity);
+    Transaction::create([
+        'post_id' => $item->id,
+        'giver_id' => $item->user_id,
+        'receiver_id' => Auth::id(),
+        'status' => 'pending',
+        'quantity' => $quantity,
+    ]);
+
+    $this->updateItemStatus($item);
+
+    return response()->json(['message' => 'Yêu cầu đã được gửi thành công!']);
+}
+
+public function update(Request $request, $id)
+{
+    $item = Item::findOrFail($id);
+    if (!$item->is_approved && Auth::id() !== $item->user_id) {
+        abort(403, 'Bài đăng chưa được duyệt.');
+    }
+    $transaction = Transaction::where('id', $id)
+        ->where('giver_id', auth()->id())
+        ->firstOrFail();
+ $item = $transaction->post;
+    if (!$item->is_approved) {
+        return response()->json(['message' => 'Bài đăng này đang chờ duyệt, không thể thao tác.'], 403);
+    } 
+    $action = $request->input('action');
+
+    switch ($action) {
+        case 'accept':
+            // Kiểm tra lại số lượng khả dụng trước khi chấp nhận
+            $item = $transaction->post;
+            if ($item->quantity < $transaction->quantity) {
+                return response()->json(['message' => 'Không đủ số lượng khả dụng để chấp nhận yêu cầu.'], 400);
+            }
+            $transaction->status = 'accepted';
+            $item->decrement('quantity', $transaction->quantity);
             $this->updateItemStatus($item);
-        });
-
-        return response()->json(['message' => 'Yêu cầu đã được gửi thành công!']);
+            break;
+        case 'reject':
+            $transaction->status = 'rejected';
+            // Không cộng lại số lượng vì chưa từng trừ
+            break;
+        case 'pending':
+            $transaction->status = 'pending';
+            break;
+        case 'completed':
+            $transaction->status = 'completed';
+            break;
     }
 
-    public function update(Request $request, $id)
-    {
-        $transaction = Transaction::where('id', $id)
-            ->where('giver_id', auth()->id())
-            ->firstOrFail();
+    $transaction->save();
 
-        $action = $request->input('action');
+    return response()->json(['message' => 'Cập nhật trạng thái thành công!']);
+}
 
-        if ($transaction->status !== 'rejected' && $action === 'reject') {
-            $transaction->post->increment('quantity', $transaction->quantity);
-            $this->updateItemStatus($transaction->post); 
+public function destroy($id)
+{
+    $transaction = Transaction::where('post_id', $id)
+        ->where('receiver_id', Auth::id())
+        ->first();
 
-        }
-
-        switch ($action) {
-            case 'accept':
-                $transaction->status = 'accepted';
-                break;
-            case 'reject':
-                $transaction->status = 'rejected';
-                break;
-            case 'pending':
-                $transaction->status = 'pending';
-                break;
-            case 'completed':
-                $transaction->status = 'completed';
-                break;
-        }
-
-        $transaction->save();
-
-        return response()->json(['message' => 'Cập nhật trạng thái thành công!']);
+    if (!$transaction) {
+        return response()->json(['message' => 'Yêu cầu không tồn tại.'], 404);
     }
 
-    public function destroy($id)
-    {
-        $transaction = Transaction::where('post_id', $id)
-            ->where('receiver_id', Auth::id())
-            ->first();
+    // Không cộng lại số lượng vì chỉ trừ khi accepted
+    $transaction->delete();
 
-        if (!$transaction) {
-            return response()->json(['message' => 'Yêu cầu không tồn tại.'], 404);
-        }
+    $this->updateItemStatus($transaction->post);
 
-        $transaction->post->increment('quantity', $transaction->quantity);
-        $this->updateItemStatus($transaction->post);
-
-        $transaction->delete();
-
-        return response()->json(['message' => 'Đã hủy yêu cầu thành công.']);
-    }
+    return response()->json(['message' => 'Đã hủy yêu cầu thành công.']);
+}
 
     // --- Statistics (moved from StatisticsController) ---
     public function statistics(Request $request)

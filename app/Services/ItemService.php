@@ -44,13 +44,31 @@ class ItemService
         return Item::create($data);
     }
 
-    public function update($id, $data)
-    {
-        $item = Item::findOrFail($id);
-        $data['is_approved'] = 0; 
-        $item->update($data);
-        return $item;
+   public function update($id, $data)
+{
+    $item = Item::findOrFail($id);
+
+    if (isset($data['quantity'])) {
+        // Tổng số lượng đã được yêu cầu (pending + accepted)
+        $requested = $item->transactions()
+            ->whereIn('status', ['pending', 'accepted'])
+            ->sum('quantity');
+        if ($data['quantity'] < $requested) {
+            $link = route('transactions.index');
+            throw new \Exception(
+                'Không thể giảm số lượng nhỏ hơn tổng số lượng đã được yêu cầu (' . $requested . '). ' .
+                'Vui lòng <a href="'.$link.'" style="color:#2563eb;text-decoration:underline;">xử lý các yêu cầu</a> trước khi chỉnh sửa.'
+            );
+        }
     }
+
+    $data['is_approved'] = 0; 
+    $item->update($data);
+
+    app(\App\Http\Controllers\TransactionController::class)->updateItemStatus($item);
+
+    return $item;
+}
 
     public function delete($id)
 {

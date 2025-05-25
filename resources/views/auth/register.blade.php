@@ -86,7 +86,7 @@
         <div class="flex items-center">
           <input type="checkbox" id="terms" name="terms" required class="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded">
           <label for="terms" class="ml-2 text-sm text-gray-700">
-            Tôi đồng ý với <a href="terms.html" class="text-green-600 hover:text-green-800">Điều khoản sử dụng</a> và <a href="privacy.html" class="text-green-600 hover:text-green-800">Chính sách bảo mật</a>
+            Tôi đồng ý với <a href="{{ route('terms') }}" class="text-green-600 hover:text-green-800">Điều khoản sử dụng</a> và <a href="{{ route('privacy-policy') }}" class="text-green-600 hover:text-green-800">Chính sách bảo mật</a>
           </label>
         </div>
         @error('terms')

@@ -63,7 +63,7 @@
           <input type="checkbox" id="consent" name="consent" required
             class="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded">
           <label for="consent" class="ml-2 text-sm text-gray-700">
-            Tôi đồng ý với <a href="privacy.html" class="text-green-600 hover:text-green-800">Chính sách bảo
+            Tôi đồng ý với <a href="{{ route('privacy-policy') }}" class="text-green-600 hover:text-green-800">Chính sách bảo
             mật</a> và cho phép ShareCycle liên hệ với tôi qua email.
           </label>
           </div>
@@ -164,7 +164,7 @@
         <h2 class="text-xl font-bold mb-4">Bạn cần hỗ trợ?</h2>
         <p class="text-gray-700 mb-4">Nếu bạn có câu hỏi hoặc cần hỗ trợ, hãy xem qua các câu hỏi thường gặp của chúng
         tôi.</p>
-        <a href="faq.html"
+        <a href="{{ route('faq') }}"
         class="inline-block bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-4 rounded-md">
         Xem FAQ
         </a>

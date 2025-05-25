@@ -106,43 +106,60 @@ class ItemController extends Controller
         ]);
     }
     
-    public function edit($id, Request $request)
-    {
-        $item = $this->itemService->getById($id);
+   public function edit($id, Request $request)
+{
+    $item = $this->itemService->getById($id);
 
-        if (Auth::id() !== $item->user_id) {
-            // Nếu không phải, trả về lỗi 403 (Forbidden)
-            abort(403, 'Bạn không có quyền chỉnh sửa bài đăng này.');
-        }
-        $categories = $this->categoryService->getAll();
-
-        return view('item.edit', [
-            'item' => $item,
-            'categories' => $categories
-        ]);
+    if (Auth::id() !== $item->user_id) {
+        abort(403, 'Bạn không có quyền chỉnh sửa bài đăng này.');
     }
+
+    // Kiểm tra nếu đã có transaction pending hoặc accepted
+    $hasRequest = $item->transactions()
+        ->whereIn('status', ['pending', 'accepted'])
+        ->exists();
+
+    if ($hasRequest) {
+        // Có thể chuyển hướng về trang chi tiết và báo lỗi
+        return redirect()->route('item.detail', $item->id)
+            ->with('error', 'Không thể chỉnh sửa vì sản phẩm đã có yêu cầu nhận hoặc đang xử lý.');
+    }
+
+    $categories = $this->categoryService->getAll();
+
+    return view('item.edit', [
+        'item' => $item,
+        'categories' => $categories
+    ]);
+}
     
     public function update($id, Request $request)
-    {
+{
+    try {
         $data = $request->all();
         $item = $this->itemService->update($id, $data);
-        
+
         if ($request->filled('deleted_images')) {
             foreach ($request->input('deleted_images') as $imageId) {
                 $this->imageService->delete($imageId);
             }
         }
-        
+
         if ($request->hasFile('new_images')) {
             foreach ($request->file('new_images') as $image) {
-                // Use the new uploadAndCreate method
                 $this->imageService->uploadAndCreate($image, $id);
             }
         }
         Mail::to('nguyenhoangviet251103@gmail.com')->send(new NewItemSubmitted($item));
 
         return redirect()->route('item.detail', ['id' => $id])->with('success', 'Cập nhật thành công!');
+    } catch (\Exception $e) {
+        // Hiển thị thông báo lỗi và giữ lại dữ liệu cũ
+        return redirect()->back()
+            ->withInput()
+            ->with('error', $e->getMessage());
     }
+}
 
     public function destroy($id)
     {
