@@ -1,4 +1,6 @@
 document.addEventListener("DOMContentLoaded", function () {
+  const items = document.querySelectorAll('#itemsGrid .item-card');
+  document.getElementById('noItemsMessage').style.display = items.length === 0 ? '' : 'none';
     const deleteButtons = document.querySelectorAll(".delete-item-btn");
     const modal = document.getElementById("deleteConfirmModal");
     
@@ -64,8 +66,8 @@ document.addEventListener("DOMContentLoaded", function () {
             closeModal();
             showNotification('Xóa thành công', 'success');
             setTimeout(() => {
-                window.location.href = "/user/1";
-              }, 1000);
+              window.location.reload();
+            }, 1000);
           })
           .catch(() => {
             showNotification('Xóa không thành công. Vui lòng thử lại sau.', 'error');

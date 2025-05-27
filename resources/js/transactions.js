@@ -12,6 +12,13 @@ document.addEventListener('DOMContentLoaded', function () {
     sentTransactions = JSON.parse(sentContainer.dataset.sentTransactions || '[]');
     renderSentTransactions(sentTransactions);
   }
+  
+  // Chỉ cập nhật thống kê cho tab đang hiển thị
+  if (!document.getElementById('sent-requests-section').classList.contains('hidden')) {
+    updateStats(sentTransactions, true);
+  } else {
+    updateStats(transactions, false);
+  }
 
   // Thêm chức năng tìm kiếm và lọc cho cả hai tab
   const searchInput = document.getElementById('search-input');
