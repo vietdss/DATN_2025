@@ -13,6 +13,8 @@ import "./explore"
 import "./chat"
 import "./menu" // Added menu.js import
 import "./notification-badge" // Added notification badge import
+import "./transaction-notification" // Added transaction notification import
+
 import "./account-settings"
 import "./address-handler"
 import "./profile"

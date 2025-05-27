@@ -106,6 +106,7 @@
                     <!-- Items Grid -->
                     <div class="p-6">
                         <div class="flex justify-between items-center mb-4">
+                            
                             <h2 class="text-xl font-bold">Đồ đã đăng ({{ $items->total() }})</h2>
                             <div>
                                <select id="statusFilter" class="px-3 py-1 border border-gray-300 rounded-md text-sm">
