@@ -8,6 +8,8 @@ use App\Models\Item;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
+use App\Events\TransactionRequestSent;
+use App\Events\TransactionStatusUpdated;
 
 class TransactionService
 {
@@ -66,7 +68,7 @@ class TransactionService
             return ['error' => 'Không đủ số lượng khả dụng.', 'code' => 400];
         }
 
-        Transaction::create([
+        $transaction = Transaction::create([
             'post_id' => $item->id,
             'giver_id' => $item->user_id,
             'receiver_id' => Auth::id(),
@@ -75,6 +77,9 @@ class TransactionService
         ]);
 
         $this->updateItemStatus($item);
+
+        // Broadcast event for new transaction request
+        broadcast(new TransactionRequestSent($transaction));
 
         return ['success' => 'Yêu cầu đã được gửi thành công!'];
     }
@@ -91,6 +96,7 @@ class TransactionService
         }
 
         $action = $request->input('action');
+        $oldStatus = $transaction->status;
 
         switch ($action) {
             case 'accept':
@@ -114,24 +120,52 @@ class TransactionService
 
         $transaction->save();
 
+        // Broadcast event for transaction status update (only if status changed)
+        if ($oldStatus !== $transaction->status) {
+            broadcast(new TransactionStatusUpdated($transaction));
+        }
+
         return ['success' => 'Cập nhật trạng thái thành công!'];
     }
 
     public function destroy($id)
+{
+    $transaction = Transaction::where('post_id', $id)
+        ->where('receiver_id', Auth::id())
+        ->first();
+
+    if (!$transaction) {
+        return ['error' => 'Yêu cầu không tồn tại.', 'code' => 404];
+    }
+
+    // Hoàn lại số lượng nếu trạng thái là pending hoặc accepted
+    if (in_array($transaction->status, ['pending', 'accepted'])) {
+        $item = $transaction->post;
+        $item->increment('quantity', $transaction->quantity);
+        $this->updateItemStatus($item);
+    }
+
+    $transaction->delete();
+
+    return ['success' => 'Đã hủy yêu cầu thành công.'];
+}
+
+    public function getUnreadRequestsCount()
     {
-        $transaction = Transaction::where('post_id', $id)
-            ->where('receiver_id', Auth::id())
-            ->first();
+        return Transaction::where('giver_id', Auth::id())
+            ->where('status', 'pending')
+            ->where('is_read', false)
+            ->count();
+    }
 
-        if (!$transaction) {
-            return ['error' => 'Yêu cầu không tồn tại.', 'code' => 404];
-        }
+    public function markRequestsAsRead()
+    {
+        Transaction::where('giver_id', Auth::id())
+            ->where('status', 'pending')
+            ->where('is_read', false)
+            ->update(['is_read' => true]);
 
-        $transaction->delete();
-
-        $this->updateItemStatus($transaction->post);
-
-        return ['success' => 'Đã hủy yêu cầu thành công.'];
+        return true;
     }
 
     public function statistics(Request $request)

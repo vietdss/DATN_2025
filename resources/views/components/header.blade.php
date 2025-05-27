@@ -7,8 +7,6 @@
         <span>ShareCycle</span>
       </a>
 
-
-
       <!-- Navigation - Desktop -->
       <nav class="hidden md:flex items-center space-x-6">
         <a href="{{ route('home') }}" class="hover:text-green-200">Trang chủ</a>
@@ -17,6 +15,10 @@
         <a href="{{ route('messages.index') }}" class="hover:text-green-200 relative">
           Tin nhắn
           <span id="unreadBadgeDesktop" class="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center hidden">0</span>
+        </a>
+        <a href="{{ route('transactions.index') }}" class="hover:text-green-200 relative">
+          Yêu cầu
+          <span id="unreadTransactionBadgeDesktop" class="absolute -top-2 -right-2 bg-orange-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center hidden">0</span>
         </a>
         <a href="{{ route('item.create') }}" class="hover:text-green-200">Đăng bài</a>
 
@@ -51,7 +53,6 @@
 
       <!-- Mobile Buttons -->
       <div class="flex items-center md:hidden space-x-4">
-
         <a href="{{ route('item.create') }}" class="text-white p-1">
           <i class="fas fa-plus text-xl"></i>
         </a>
@@ -60,7 +61,6 @@
         </button>
       </div>
     </div>
-
   </div>
 
   <!-- Mobile Menu -->
@@ -68,12 +68,15 @@
     <div class="container mx-auto px-4 py-2">
       <nav class="flex flex-col space-y-2">
         <a href="{{ route('home') }}" class="block py-2 hover:text-green-200">Trang chủ</a>
-
         <a href="{{ route('item.index') }}" class="block py-2 hover:text-green-200">Khám phá</a>
         <a href="{{ route('user.index') }}" class="block py-2 hover:text-green-200">Kết nối</a>
         <a href="{{ route('messages.index') }}" class="block py-2 hover:text-green-200 relative">
           Tin nhắn
           <span id="unreadBadgeMobile" class="ml-2 inline-block bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center hidden">0</span>
+        </a>
+        <a href="{{ route('transactions.index') }}" class="block py-2 hover:text-green-200 relative">
+          Yêu cầu
+          <span id="unreadTransactionBadgeMobile" class="ml-2 inline-block bg-orange-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center hidden">0</span>
         </a>
         <a href="{{ route('item.create') }}" class="block py-2 hover:text-green-200">Đăng bài</a>
 
@@ -104,3 +107,9 @@
     </div>
   </div>
 </header>
+
+<!-- Meta tags for JavaScript -->
+@auth
+<meta name="user-id" content="{{ auth()->id() }}">
+@endauth
+<meta name="csrf-token" content="{{ csrf_token() }}">

@@ -100,7 +100,7 @@
       class="bg-yellow-500 hover:bg-yellow-600 text-white font-medium py-2 px-4 rounded-md flex-1 text-center">
       <i class="fas fa-edit mr-2"></i> Sửa
       </a>
-      <form action="{{ route('item.destroy', $item->id) }}" method="POST" class="flex-1">
+      <form id="deleteItemForm" action="{{ route('item.destroy', $item->id) }}" method="POST" class="flex-1">
       @csrf
       @method('DELETE')
       <button type="button"
@@ -261,6 +261,29 @@ function closeQuantityErrorModal() {
 }
 @if(session('error'))
     // Tự động cuộn lên đầu trang khi có lỗi
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+@endif
+document.querySelector('.delete-item-btn').addEventListener('click', function() {
+    document.getElementById('deleteConfirmModal').classList.remove('hidden');
+    setTimeout(() => {
+        document.querySelector('#deleteConfirmModal > div').classList.remove('scale-95', 'opacity-0');
+        document.querySelector('#deleteConfirmModal > div').classList.add('scale-100', 'opacity-100');
+    }, 10);
+});
+document.getElementById('cancelDelete').onclick = closeDeleteModal;
+document.getElementById('closeDeleteModal').onclick = closeDeleteModal;
+function closeDeleteModal() {
+    document.getElementById('deleteConfirmModal').classList.add('hidden');
+    document.querySelector('#deleteConfirmModal > div').classList.add('scale-95', 'opacity-0');
+    document.querySelector('#deleteConfirmModal > div').classList.remove('scale-100', 'opacity-100');
+}
+document.getElementById('confirmDelete').onclick = function() {
+    document.getElementById('deleteItemForm').submit();
+};
+function closeQuantityErrorModal() {
+    document.getElementById('quantityErrorModal').classList.add('hidden');
+}
+@if(session('error'))
     window.scrollTo({ top: 0, behavior: 'smooth' });
 @endif
 </script>

@@ -83,5 +83,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/transactions', [TransactionController::class, 'index'])->name('transactions.index');
     Route::put('/transactions/{id}', [TransactionController::class, 'update'])->name('transactions.update');
     Route::get('/statistics', [TransactionController::class, 'statistics'])->name('statistics');
+    Route::get('/transactions/unread-count', [TransactionController::class, 'getUnreadCount']);
+    Route::post('/transactions/mark-as-read', [TransactionController::class, 'markAsRead']);
 });
 

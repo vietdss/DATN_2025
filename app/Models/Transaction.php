@@ -15,7 +15,7 @@ class Transaction extends Model
         'receiver_id',
         'quantity', 
         'status',
-
+        'is_read',
     ];
 
     // Nếu bạn dùng enum PHP 8.1+, có thể định nghĩa status kiểu enum

@@ -17,10 +17,6 @@ class TransactionController extends Controller
     public function index()
     {
         $data = $this->service->getTransactions();
-        
-        // Mark requests as read when viewing transactions page
-        $this->service->markRequestsAsRead();
-        
         return view('transactions.index', $data);
     }
 
@@ -49,18 +45,6 @@ class TransactionController extends Controller
             return response()->json(['message' => $result['error']], $result['code']);
         }
         return response()->json(['message' => $result['success']]);
-    }
-
-    public function getUnreadCount()
-    {
-        $count = $this->service->getUnreadRequestsCount();
-        return response()->json(['count' => $count]);
-    }
-
-    public function markAsRead()
-    {
-        $this->service->markRequestsAsRead();
-        return response()->json(['success' => true]);
     }
 
     public function statistics(Request $request)
