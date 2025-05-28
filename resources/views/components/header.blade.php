@@ -9,7 +9,6 @@
 
       <!-- Navigation - Desktop -->
       <nav class="hidden md:flex items-center space-x-6">
-        <a href="{{ route('home') }}" class="hover:text-green-200">Trang chủ</a>
         <a href="{{ route('item.index') }}" class="hover:text-green-200">Khám phá</a>
         <a href="{{ route('user.index') }}" class="hover:text-green-200">Kết nối</a>
         <a href="{{ route('messages.index') }}" class="hover:text-green-200 relative">
@@ -34,8 +33,7 @@
             @auth
         <a href="{{ route('user.profile', ['id' => auth()->id()]) }}"
           class="block px-4 py-2 text-gray-700 hover:bg-gray-100">Hồ sơ</a>
-        <a href="{{ route('transactions.index') }}" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">Yêu
-          cầu</a>
+
         <a href="{{ route('statistics') }}" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">Thống kê</a>
         <a href="{{ route('user.setting') }}" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">Cài đặt</a>
         <form method="POST" action="{{ route('logout') }}">
@@ -67,7 +65,6 @@
   <div class="md:hidden bg-green-700 hidden" id="mobileMenu">
     <div class="container mx-auto px-4 py-2">
       <nav class="flex flex-col space-y-2">
-        <a href="{{ route('home') }}" class="block py-2 hover:text-green-200">Trang chủ</a>
         <a href="{{ route('item.index') }}" class="block py-2 hover:text-green-200">Khám phá</a>
         <a href="{{ route('user.index') }}" class="block py-2 hover:text-green-200">Kết nối</a>
         <a href="{{ route('messages.index') }}" class="block py-2 hover:text-green-200 relative">
@@ -90,7 +87,6 @@
             @auth
         <a href="{{ route('user.profile', ['id' => auth()->id()]) }}" class="block py-2 hover:text-green-200">Hồ
           sơ</a>
-        <a href="{{ route('transactions.index') }}" class="block py-2 hover:text-green-200">Yêu cầu</a>
         <a href="{{ route('statistics') }}" class="block py-2 hover:text-green-200">Thống kê</a>
         <a href="{{ route('user.setting') }}" class="block py-2 hover:text-green-200">Cài đặt</a>
         <form method="POST" action="{{ route('logout') }}">
