@@ -105,7 +105,7 @@
         @foreach($items as $item)
           <article onclick="window.location='{{ route('item.detail', ['id' => $item->id]) }}'"
                    class="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition duration-300 cursor-pointer">
-            <img src="{{ optional($item->images->first())->image_url ?? asset('images/placeholder-item.jpg') }}" 
+            <img src="{{ optional($item->images->first())->image_url ?? asset('images/sharecycle-twitter.jpg') }}" 
                  alt="{{ $item->title }} - {{ $item->category->name ?? 'Đồ dùng' }}" 
                  class="w-full h-40 object-cover"
                  loading="lazy">
