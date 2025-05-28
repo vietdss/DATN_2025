@@ -17,7 +17,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
 <script src="{{ asset('build/assets/app-4ed993c7.js') }}"></script>
 
-   <script src="{{ asset('build/assets/app-eb687449.js') }}"></script>
+   <script src="{{ asset('build/assets/app-b2c0f759.js') }}"></script>
    
 <link rel="stylesheet" href="{{ asset('build/assets/app-49001d3f.css') }}">
 
