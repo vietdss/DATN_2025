@@ -63,12 +63,12 @@
           </a>
         </div>
       </div>
-      <div class="md:w-1/2">
+      {{-- <div class="md:w-1/2">
         <img src="{{ asset('images/sharecycle-twitter.jpg') }}" 
              alt="Chia sẻ thực phẩm và đồ dùng trong cộng đồng ShareCycle" 
              class="rounded-lg shadow-lg w-full h-auto"
              loading="eager">
-      </div>
+      </div> --}}
     </div>
   </section>
 
