@@ -94,8 +94,10 @@ function setupMapFunctionality(map, items, userMarker, itemMarkers, initialLat, 
     const popupContent = document.createElement("div")
     popupContent.innerHTML = `
       <div class="item-popup">
-        <img src="${item.images[0].image_url}" class="w-full h-36 object-cover" alt="${item.title}">
-        <span class="category font-bold">${item.category.name}</span>
+<img src="${item.images?.[0]?.image_url || '/placeholder.svg?height=144&width=300'}" 
+         class="w-full h-36 object-cover" 
+         alt="${item.title}"
+         onerror="this.src='/placeholder.svg?height=144&width=300'">        <span class="category font-bold">${item.category.name}</span>
         <h3>${item.title}</h3>
         <div class="footer flex gap-x-2">
           <span class="location"><i class="fas fa-map-marker-alt"></i>Đang tải... (0 km)</span>
