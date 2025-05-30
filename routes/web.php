@@ -20,16 +20,17 @@ use App\Http\Controllers\Auth\FacebookController;
 | be assigned to the "web" middleware group. Make something great!
 |
 */
-
+if (App::environment('production')) {
+    Route::prefix('admin')->group(function () {
+        Route::any('{any}', fn() => redirect('/'))->where('any', '.*');
+    });
+}
 Route::get('/auth/google', [GoogleController::class, 'redirectToGoogle'])->name('google.login');
 Route::get('/auth/google/callback', [GoogleController::class, 'handleGoogleCallback']);
 
 Route::get('auth/facebook', [FacebookController::class, 'redirectToFacebook']);
 Route::get('auth/facebook/callback', [FacebookController::class, 'handleFacebookCallback']);
-Route::get('/run-admin-install', function () {
-    \Artisan::call('admin:install');
-    return 'Done!';
-});
+
 
 // Public Routes
 Route::get('/', [HomeController::class, 'index']);
