@@ -20,11 +20,7 @@ use App\Http\Controllers\Auth\FacebookController;
 | be assigned to the "web" middleware group. Make something great!
 |
 */
-if (App::environment('production')) {
-    Route::prefix('admin')->group(function () {
-        Route::any('{any}', fn() => redirect('/'))->where('any', '.*');
-    });
-}
+
 Route::get('/auth/google', [GoogleController::class, 'redirectToGoogle'])->name('google.login');
 Route::get('/auth/google/callback', [GoogleController::class, 'handleGoogleCallback']);
 
