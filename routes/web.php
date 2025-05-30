@@ -26,6 +26,10 @@ Route::get('/auth/google/callback', [GoogleController::class, 'handleGoogleCallb
 
 Route::get('auth/facebook', [FacebookController::class, 'redirectToFacebook']);
 Route::get('auth/facebook/callback', [FacebookController::class, 'handleFacebookCallback']);
+Route::get('/run-admin-install', function () {
+    \Artisan::call('admin:install');
+    return 'Done!';
+});
 
 // Public Routes
 Route::get('/', [HomeController::class, 'index']);
