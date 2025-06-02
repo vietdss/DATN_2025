@@ -14,7 +14,7 @@ class Kernel extends ConsoleKernel
     {
         // $schedule->command('inspire')->hourly();
         $schedule->command('app:delete-unconfirmed-transactions')->daily();
-        $schedule->command('products:delete-expired')->everyMinute(); // Xóa mỗi ngày
+        $schedule->command('products:delete-expired')->everyFiveMinutes();
     }
 
     /**
