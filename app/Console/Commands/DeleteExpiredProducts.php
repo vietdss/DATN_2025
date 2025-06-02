@@ -22,7 +22,7 @@ class DeleteExpiredProducts extends Command
             ->chunk(100, function ($items) {
                 foreach ($items as $item) {
                     // Cập nhật transaction liên quan thành 'rejected'
-                    Transaction::where('item_id', $item->id)
+                    Transaction::where('post_id', $item->id)
                         ->whereIn('status', ['pending', 'accepted'])
                         ->update(['status' => 'rejected']);
 

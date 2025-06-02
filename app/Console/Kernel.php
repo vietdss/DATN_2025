@@ -4,9 +4,14 @@ namespace App\Console;
 
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Console\Kernel as ConsoleKernel;
-
+use App\Console\Commands\DeleteUnconfirmedTransactions;
+use App\Console\Commands\DeleteExpiredProducts;
 class Kernel extends ConsoleKernel
 {
+    protected $commands = [
+        DeleteUnconfirmedTransactions::class,
+        DeleteExpiredProducts::class,
+    ];
     /**
      * Define the application's command schedule.
      */
