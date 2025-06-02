@@ -6,12 +6,10 @@ use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Console\Kernel as ConsoleKernel;
 use App\Console\Commands\DeleteUnconfirmedTransactions;
 use App\Console\Commands\DeleteExpiredProducts;
-use App\Console\Commands\RunAllCleanupCommands;
 
 class Kernel extends ConsoleKernel
 {
     protected $commands = [
-        RunAllCleanupCommands::class,
         DeleteUnconfirmedTransactions::class,
         DeleteExpiredProducts::class,
     ];
@@ -20,8 +18,6 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule): void
     {
-        $schedule->command('app:run-all-cleanups')->everyFiveMinutes();
-
         // $schedule->command('inspire')->hourly();
         $schedule->command('app:delete-unconfirmed-transactions')->daily();
         $schedule->command('products:delete-expired')->everyFiveMinutes();
@@ -32,7 +28,7 @@ class Kernel extends ConsoleKernel
      */
     protected function commands(): void
     {
-        $this->load(__DIR__ . '/Commands');
+        $this->load(__DIR__.'/Commands');
 
         require base_path('routes/console.php');
     }
