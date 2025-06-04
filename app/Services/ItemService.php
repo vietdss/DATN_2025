@@ -83,60 +83,65 @@ class ItemService
     return $item->delete();
 }
 public function search($params)
-{
-    $queryBuilder = Item::query();
+    {
+        $queryBuilder = Item::with(['category', 'images']); // ✅ FIX: Always load relationships
         $queryBuilder->where('is_approved', 1);
 
-if (Auth::check()) {
-        $userId = Auth::id();
-        $queryBuilder->where('user_id', '!=', $userId);
-    }
-    $queryBuilder->where('status', '!=', 'Taken');
-    // Các điều kiện lọc KHÁC (category, distance)
-    if (!empty($params['category_id'])) {
-        $queryBuilder->where('category_id', $params['category_id']);
-    }
-
-    if (!empty($params['latitude']) && !empty($params['longitude']) && !empty($params['distance'])) {
-        $latitude = $params['latitude'];
-        $longitude = $params['longitude'];
-        $distance = $params['distance'];
-
-        $queryBuilder->selectRaw("*, 
-            (6371 * ACOS(
-                COS(RADIANS(?)) * COS(RADIANS(JSON_UNQUOTE(JSON_EXTRACT(location, '$.lat')))) * 
-                COS(RADIANS(JSON_UNQUOTE(JSON_EXTRACT(location, '$.lng'))) - RADIANS(?)) + 
-                SIN(RADIANS(?)) * SIN(RADIANS(JSON_UNQUOTE(JSON_EXTRACT(location, '$.lat'))))
-            )) AS distance", [
-                $latitude, $longitude, $latitude
-            ])->having('distance', '<=', $distance);
-    }
-
-    // Lấy dữ liệu trước (có thể giới hạn để tối ưu)
-    $items = $queryBuilder->get();
-
-    if (!empty($params['search']) && $items->isNotEmpty()) {
-        $documents = $items->map(function ($item) {
-            return [
-                'id' => $item->id,
-                'text' => collect($item->getAttributes())->map(fn($v, $k) => "$k: $v")->implode(', '),
-            ];
-        })->values()->toArray();
-
-        try {
-            $reranked = $this->cohereService->rerank($params['search'], $documents);
-            $ids = array_column($reranked, 'id');
-
-            $items = Item::whereIn('id', $ids)->get()->sortBy(function ($item) use ($ids) {
-                return array_search($item->id, $ids);
-            })->values();
-        } catch (\Exception $e) {
-            \Log::error("Cohere error: " . $e->getMessage());
+        if (Auth::check()) {
+            $userId = Auth::id();
+            $queryBuilder->where('user_id', '!=', $userId);
         }
-    }
+        $queryBuilder->where('status', '!=', 'Taken');
+        
+        // Các điều kiện lọc KHÁC (category, distance)
+        if (!empty($params['category_id'])) {
+            $queryBuilder->where('category_id', $params['category_id']);
+        }
 
-    return $items;
-}
+        if (!empty($params['latitude']) && !empty($params['longitude']) && !empty($params['distance'])) {
+            $latitude = $params['latitude'];
+            $longitude = $params['longitude'];
+            $distance = $params['distance'];
+
+            $queryBuilder->selectRaw("*, 
+                (6371 * ACOS(
+                    COS(RADIANS(?)) * COS(RADIANS(JSON_UNQUOTE(JSON_EXTRACT(location, '$.lat')))) * 
+                    COS(RADIANS(JSON_UNQUOTE(JSON_EXTRACT(location, '$.lng'))) - RADIANS(?)) + 
+                    SIN(RADIANS(?)) * SIN(RADIANS(JSON_UNQUOTE(JSON_EXTRACT(location, '$.lat'))))
+                )) AS distance", [
+                    $latitude, $longitude, $latitude
+                ])->having('distance', '<=', $distance);
+        }
+
+        // Lấy dữ liệu trước (có thể giới hạn để tối ưu)
+        $items = $queryBuilder->get();
+
+        if (!empty($params['search']) && $items->isNotEmpty()) {
+            $documents = $items->map(function ($item) {
+                return [
+                    'id' => $item->id,
+                    'text' => collect($item->getAttributes())->map(fn($v, $k) => "$k: $v")->implode(', '),
+                ];
+            })->values()->toArray();
+
+            try {
+                $reranked = $this->cohereService->rerank($params['search'], $documents);
+                $ids = array_column($reranked, 'id');
+
+                // ✅ FIX: Load relationships when reordering
+                $items = Item::with(['category', 'images'])
+                    ->whereIn('id', $ids)
+                    ->get()
+                    ->sortBy(function ($item) use ($ids) {
+                        return array_search($item->id, $ids);
+                    })->values();
+            } catch (\Exception $e) {
+                \Log::error("Cohere error: " . $e->getMessage());
+            }
+        }
+
+        return $items;
+    }
 
 
 

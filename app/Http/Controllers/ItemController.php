@@ -55,8 +55,7 @@ class ItemController extends Controller
 
     // Lấy danh mục
     $categories = $this->categoryService->getAll();
-
-    return view('item.index', [
+;    return view('item.index', [
         'items' => $items,                       // tất cả (Collection đầy đủ)
         'itemsWithPaginate' => $itemsWithPaginate, // kết quả sau phân trang
         'categories' => $categories
