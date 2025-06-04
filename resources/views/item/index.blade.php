@@ -218,6 +218,9 @@
 <script>
     // Pass items data to JavaScript
     window.exploreItems = @json($items);
-
+    console.log('Explore items data:', window.exploreItems);
+</script>
+<script>
+    
 </script>
 @endpush

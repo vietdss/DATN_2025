@@ -10,12 +10,14 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 use CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary;
+
 class UserService
 {
     public function getAll()
     {
         return User::all();
     }
+
     /**
      * Cập nhật thông tin user
      */
@@ -38,6 +40,7 @@ class UserService
         $user = User::findOrFail($id);
         return $user->delete();
     }
+
     public function searchUsers(Request $request)
     {
         $query = User::withCount('items')
@@ -84,10 +87,45 @@ class UserService
             // Nếu không có sort nào -> mặc định theo tên
             $query->orderBy('name');
         }
+        
         if(Auth::check()){
             $query->where('id', '!=', Auth::id());
         }
+        
         return $query->paginate(5);
+    }
+
+    /**
+     * Lấy items của user với filter và search
+     */
+    public function getUserItemsWithFilter($userId, Request $request)
+    {
+        $query = Item::where('user_id', $userId)
+            ->with('images')
+            ->orderBy('created_at', 'desc');
+
+        // Tìm kiếm theo tên
+        if ($request->filled('search')) {
+            $query->where('title', 'like', '%' . $request->search . '%');
+        }
+
+        // Lọc theo trạng thái
+        if ($request->filled('status')) {
+            switch ($request->status) {
+                case 'Còn hàng':
+                    $query->where('is_approved', true)
+                          ->where('status', '!=', 'Taken');
+                    break;
+                case 'Hết hàng':
+                    $query->where('status', 'Taken');
+                    break;
+                case 'Chờ duyệt':
+                    $query->where('is_approved', false);
+                    break;
+            }
+        }
+
+        return $query->paginate(4)->appends($request->query());
     }
 
     // Các phương thức hiện có...
@@ -95,7 +133,6 @@ class UserService
     public function updateProfile(User $user, array $data)
     {
         $user->update($data);
-
         return $user;
     }
 
@@ -104,7 +141,6 @@ class UserService
         $user->update([
             'password' => Hash::make($newPassword)
         ]);
-
         return $user;
     }
 
@@ -119,6 +155,7 @@ class UserService
                 Cloudinary::destroy($publicId);
             }
         }
+        
         // Tải ảnh mới lên Cloudinary
         $uploadedImage = Cloudinary::upload($image->getRealPath(), [
             'folder' => 'profile_images',
@@ -150,5 +187,4 @@ class UserService
         }
         return null;
     }
-
 }
