@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\Auth\GoogleController;
 use App\Http\Controllers\Auth\FacebookController;
-
+use Illuminate\Support\Facades\Cache;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -21,14 +21,35 @@ use App\Http\Controllers\Auth\FacebookController;
 |
 */
 
+
+Route::get('/reverse-geocode', function () {
+    $lat = request('lat');
+    $lon = request('lon');
+
+    if (!$lat || !$lon) {
+        return response()->json(['error' => 'Thiếu tham số'], 400);
+    }
+
+    $cacheKey = "reverse_geocode_{$lat}_{$lon}";
+    return Cache::remember($cacheKey, now()->addHours(6), function () use ($lat, $lon) {
+        return Http::withHeaders([
+            'User-Agent' => 'MyLaravelApp/1.0 (nguyenhoangviet251103@gmail.com)',
+        ])->get('https://nominatim.openstreetmap.org/reverse', [
+                    'format' => 'json',
+                    'lat' => $lat,
+                    'lon' => $lon,
+                    'zoom' => 18,
+                    'addressdetails' => 1,
+                ])->json();
+    });
+});
+
 Route::get('/auth/google', [GoogleController::class, 'redirectToGoogle'])->name('google.login');
 Route::get('/auth/google/callback', [GoogleController::class, 'handleGoogleCallback']);
 
 Route::get('auth/facebook', [FacebookController::class, 'redirectToFacebook']);
 Route::get('auth/facebook/callback', [FacebookController::class, 'handleFacebookCallback']);
-   Route::get('/transactions/export/excel', [TransactionController::class, 'exportExcel'])->name('transactions.export.excel');
-    Route::get('/transactions/export/csv', [TransactionController::class, 'exportCsv'])->name('transactions.export.csv');
-    Route::get('/transactions/export/pdf', [TransactionController::class, 'exportPdf'])->name('transactions.export.pdf');
+
 
 // Public Routes
 Route::get('/', [HomeController::class, 'index']);
@@ -81,6 +102,9 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/user/update-activity', [UserController::class, 'updateActivity'])->name('user.update-activity');
 
     // Transactions
+    Route::get('/transactions/export/excel', [TransactionController::class, 'exportExcel'])->name('transactions.export.excel');
+    Route::get('/transactions/export/csv', [TransactionController::class, 'exportCsv'])->name('transactions.export.csv');
+    Route::get('/transactions/export/pdf', [TransactionController::class, 'exportPdf'])->name('transactions.export.pdf');
     Route::post('/item/request/{id}', [TransactionController::class, 'store'])->name('item.request');
     Route::delete('/item/request/{id}', [TransactionController::class, 'destroy'])->name('item.cancel');
     Route::get('/transactions', [TransactionController::class, 'index'])->name('transactions.index');
