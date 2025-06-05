@@ -1,5 +1,12 @@
 // Map handling functionality
 import L from "leaflet"
+function debounce(fn, delay) {
+  let timeoutId;
+  return function (...args) {
+    clearTimeout(timeoutId);
+    timeoutId = setTimeout(() => fn.apply(this, args), delay);
+  };
+}
 
 export class MapHandler {
   constructor(mapElementId, options = {}) {
@@ -231,50 +238,61 @@ export class MapHandler {
     )
   }
 
-  setupAddressInput() {
-    if (!this.addressInput || !this.addressSuggestions) return
+ setupAddressInput() {
+  if (!this.addressInput || !this.addressSuggestions) return;
 
-    this.addressInput.addEventListener("input", async () => {
-      const query = this.addressInput.value.trim()
-      if (query.length < 2) {
-        this.addressSuggestions.classList.add("hidden")
-        return
+  // Nếu đã gán trước đó thì bỏ qua
+  if (this.addressInput.dataset.listenerAttached === "true") return;
+
+  const fetchSuggestions = async () => {
+    const query = this.addressInput.value.trim();
+    if (query.length < 2) {
+      this.addressSuggestions.classList.add("hidden");
+      return;
+    }
+
+    try {
+      const response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=5`);
+      const data = await response.json();
+
+      this.addressSuggestions.innerHTML = "";
+      if (data.length === 0) {
+        this.addressSuggestions.classList.add("hidden");
+        return;
       }
 
-      try {
-        const response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${query}&limit=5`)
-        const data = await response.json()
+      data.forEach((place) => {
+        const item = document.createElement("div");
+        item.textContent = place.display_name;
+        item.classList.add("hover:bg-gray-200", "cursor-pointer", "p-2");
+        item.addEventListener("click", () => {
+          this.addressInput.value = place.display_name;
+          this.updateMap(place.lat, place.lon, place.display_name);
+          this.addressSuggestions.classList.add("hidden");
+        });
+        this.addressSuggestions.appendChild(item);
+      });
 
-        this.addressSuggestions.innerHTML = ""
-        if (data.length === 0) {
-          this.addressSuggestions.classList.add("hidden")
-          return
-        }
+      this.addressSuggestions.classList.remove("hidden");
+    } catch (e) {
+      console.error("Lỗi khi gọi API:", e);
+      this.addressSuggestions.classList.add("hidden");
+    }
+  };
 
-        data.forEach((place) => {
-          const item = document.createElement("div")
-          item.textContent = place.display_name
-          item.classList.add("hover:bg-gray-200", "cursor-pointer", "p-2")
-          item.addEventListener("click", () => {
-            this.addressInput.value = place.display_name
-            this.updateMap(place.lat, place.lon, place.display_name)
-            this.addressSuggestions.classList.add("hidden")
-          })
-          this.addressSuggestions.appendChild(item)
-        })
+  const debouncedFetchSuggestions = debounce(fetchSuggestions.bind(this), 800);
 
-        this.addressSuggestions.classList.remove("hidden")
-      } catch {
-        this.addressSuggestions.classList.add("hidden")
-      }
-    })
+  this.addressInput.addEventListener("input", debouncedFetchSuggestions);
 
-    document.addEventListener("click", (event) => {
-      if (!this.addressInput.contains(event.target) && !this.addressSuggestions.contains(event.target)) {
-        this.addressSuggestions.classList.add("hidden")
-      }
-    })
-  }
+  // Đánh dấu đã gán listener
+  this.addressInput.dataset.listenerAttached = "true";
+
+  document.addEventListener("click", (event) => {
+    if (!this.addressInput.contains(event.target) && !this.addressSuggestions.contains(event.target)) {
+      this.addressSuggestions.classList.add("hidden");
+    }
+  });
+}
 }
 
 // Initialize map when DOM is loaded

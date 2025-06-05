@@ -84,7 +84,7 @@ class ItemService
 }
 public function search($params)
     {
-        $queryBuilder = Item::with(['category', 'images']); // ✅ FIX: Always load relationships
+        $queryBuilder = Item::with(['category', 'images']); 
         $queryBuilder->where('is_approved', 1);
 
         if (Auth::check()) {
@@ -112,7 +112,17 @@ public function search($params)
                     $latitude, $longitude, $latitude
                 ])->having('distance', '<=', $distance);
         }
-
+if (!empty($params['sort'])) {
+    switch ($params['sort']) {
+        case 'newest':
+            $queryBuilder->orderBy('created_at', 'desc');
+            break;
+        case 'oldest':
+            $queryBuilder->orderBy('created_at', 'asc');
+            break;
+        // Thêm các case khác nếu cần
+    }
+}
         // Lấy dữ liệu trước (có thể giới hạn để tối ưu)
         $items = $queryBuilder->get();
 

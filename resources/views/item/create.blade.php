@@ -118,7 +118,7 @@
                         <!-- Map -->
                         <div class="mt-4">
                             <div id="create-map" class="h-64 bg-gray-200 rounded-lg flex items-center justify-center" style="z-index:1;">
-                                <input type="hidden" id="location" name="location">
+                                <input type="hidden" id="location" name="location" value='{"lat":10.7769,"lng":106.7009}'>
                                 <p class="text-gray-500 text-sm mt-1">Nhấp vào bản đồ để chọn vị trí</p>
                             </div>
                         </div>
