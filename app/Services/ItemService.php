@@ -65,7 +65,13 @@ class ItemService
     $data['is_approved'] = 0; 
     $item->update($data);
 
-    app(\App\Http\Controllers\TransactionController::class)->updateItemStatus($item);
+     $hasTransactions = $item->transactions()
+        ->whereIn('status', ['pending', 'accepted'])
+        ->exists();
+
+    if ($hasTransactions) {
+        app(\App\Http\Controllers\TransactionController::class)->updateItemStatus($item);
+    }
 
     return $item;
 }

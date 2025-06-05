@@ -1,5 +1,6 @@
 <?php
 
+use App\Admin\Controllers\CategoryController;
 use App\Admin\Controllers\ItemController;
 use App\Admin\Controllers\TransactionController;
 use App\Admin\Controllers\UserController;
@@ -20,5 +21,6 @@ Route::group([
     // Đặt các resource route vào bên trong group này
     $router->resource('users', UserController::class);
     $router->resource('items', ItemController::class);
+$router->resource('categories', CategoryController::class);
 
 });
