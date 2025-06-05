@@ -34,7 +34,7 @@ class UserController extends Controller
         // Sử dụng method mới với filter
         $items = $this->userService->getUserItemsWithFilter($id, $request);
 
-        $sharedCount = \App\Models\Transaction::where('giver_id', $id)->where('status', 'completed')->count();
+        $sharedCount = \App\Models\Item::where('user_id', $id)->where('is_approved', 1)->count();
         $receivedCount = \App\Models\Transaction::where('receiver_id', $id)->where('status', 'completed')->count();
         
         return view('user.profile', [

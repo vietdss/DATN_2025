@@ -44,7 +44,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="{{ asset('build/assets/app-4ed993c7.js') }}"></script>
-    <script src="{{ asset('build/assets/app-38e049f2.js') }}"></script>
+    <script src="{{ asset('build/assets/app-39e12197.js') }}"></script>
     <link rel="stylesheet" href="{{ asset('build/assets/app-49001d3f.css') }}">
     <link rel="dns-prefetch" href="//fonts.bunny.net">
     <link href="https://fonts.bunny.net/css?family=Nunito" rel="stylesheet">

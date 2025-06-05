@@ -129,26 +129,26 @@ class TransactionService
     }
 
     public function destroy($id)
-{
-    $transaction = Transaction::where('post_id', $id)
-        ->where('receiver_id', Auth::id())
-        ->first();
+    {
+        $transaction = Transaction::where('post_id', $id)
+            ->where('receiver_id', Auth::id())
+            ->first();
 
-    if (!$transaction) {
-        return ['error' => 'Yêu cầu không tồn tại.', 'code' => 404];
+        if (!$transaction) {
+            return ['error' => 'Yêu cầu không tồn tại.', 'code' => 404];
+        }
+
+        // Hoàn lại số lượng nếu trạng thái là pending hoặc accepted
+        if (in_array($transaction->status, ['pending', 'accepted'])) {
+            $item = $transaction->post;
+            $item->increment('quantity', $transaction->quantity);
+            $this->updateItemStatus($item);
+        }
+
+        $transaction->delete();
+
+        return ['success' => 'Đã hủy yêu cầu thành công.'];
     }
-
-    // Hoàn lại số lượng nếu trạng thái là pending hoặc accepted
-    if (in_array($transaction->status, ['pending', 'accepted'])) {
-        $item = $transaction->post;
-        $item->increment('quantity', $transaction->quantity);
-        $this->updateItemStatus($item);
-    }
-
-    $transaction->delete();
-
-    return ['success' => 'Đã hủy yêu cầu thành công.'];
-}
 
     public function getUnreadRequestsCount()
     {
@@ -326,6 +326,63 @@ class TransactionService
             'categoryLabels', 'categoryData', 'transactions',
             'startDate', 'endDate'
         );
+    }
+
+    public function getExportData(Request $request)
+    {
+        $endDate = $request->end_date ? Carbon::parse($request->end_date) : Carbon::now();
+        $startDate = $request->start_date ? Carbon::parse($request->start_date) : $endDate->copy()->subDays(30);
+
+        $endDate = $endDate->endOfDay();
+        $startDate = $startDate->startOfDay();
+
+        $user = auth()->user();
+
+        // Get detailed transactions for export
+        $transactions = Transaction::with([
+            'post' => function ($query) {
+                $query->withTrashed();
+            },
+            'post.category',
+            'giver',
+            'receiver'
+        ])
+            ->where(function($query) use ($user) {
+                $query->where('giver_id', $user->id)
+                      ->orWhere('receiver_id', $user->id);
+            })
+            ->whereBetween('created_at', [$startDate, $endDate])
+            ->latest()
+            ->get();
+
+        // Get summary statistics
+        $totalTransactions = $transactions->count();
+        $sharedTransactions = $transactions->where('giver_id', $user->id)->count();
+        $receivedTransactions = $transactions->where('receiver_id', $user->id)->count();
+
+        // Get category statistics
+        $categoryStats = $transactions->groupBy('post.category.name')->map(function ($group) {
+            return $group->count();
+        })->sortDesc();
+
+        // Get status statistics
+        $statusStats = $transactions->groupBy('status')->map(function ($group) {
+            return $group->count();
+        });
+
+        return [
+            'transactions' => $transactions,
+            'summary' => [
+                'total_transactions' => $totalTransactions,
+                'shared_transactions' => $sharedTransactions,
+                'received_transactions' => $receivedTransactions,
+            ],
+            'category_stats' => $categoryStats,
+            'status_stats' => $statusStats,
+            'start_date' => $startDate,
+            'end_date' => $endDate,
+            'user' => $user,
+        ];
     }
 
     public function generateTimeChartData($startDate, $endDate, $interval, $user, &$timeChartLabels, &$sharedTimeData, &$receivedTimeData)

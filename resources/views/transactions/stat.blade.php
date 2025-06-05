@@ -61,7 +61,6 @@
                     </span>
                 </div>
                 <p class="text-3xl font-bold">{{ $totalTransactions }}</p>
-
             </div>
 
             <!-- Đã chia sẻ -->
@@ -73,7 +72,6 @@
                     </span>
                 </div>
                 <p class="text-3xl font-bold">{{ $sharedTransactions }}</p>
-
             </div>
 
             <!-- Đã nhận -->
@@ -85,10 +83,7 @@
                     </span>
                 </div>
                 <p class="text-3xl font-bold">{{ $receivedTransactions }}</p>
-
             </div>
-
-
         </div>
 
         <!-- Charts -->
@@ -146,7 +141,6 @@
                             <th scope="col"
                                 class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Trạng
                                 thái</th>
-
                         </tr>
                     </thead>
                     <tbody class="bg-white divide-y divide-gray-200">
@@ -178,7 +172,6 @@
                                     {{ $transaction->post->category->name }}
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-
                                     @if (auth()->user()->id == $transaction->giver->id)
                                         <a href="{{ route('user.profile', $transaction->receiver->id) }}"
                                             class="hover:text-green-600 transition duration-150 ease-in-out">
@@ -188,7 +181,6 @@
                                             class="hover:text-green-600 transition duration-150 ease-in-out">
                                             {{ $transaction->giver->name }}</a>
                                     @endif
-
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     @if ($transaction->status == 'pending')
@@ -213,7 +205,6 @@
                                         </span>
                                     @endif
                                 </td>
-
                             </tr>
                         @empty
                             <tr>
@@ -237,7 +228,56 @@
             </div>
         </div>
 
+        <!-- Export Section -->
+        <div class="bg-white rounded-lg shadow-md p-6">
+            <h2 class="text-xl font-semibold mb-4">Xuất dữ liệu</h2>
+            <p class="text-gray-600 mb-4">Xuất dữ liệu thống kê giao dịch của bạn để sử dụng trong các ứng dụng khác.</p>
+            <div class="flex flex-wrap gap-4">
+                <a href="{{ route('transactions.export.excel', request()->all()) }}" 
+                   class="bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-4 rounded-md flex items-center transition duration-150 ease-in-out">
+                    <i class="fas fa-file-excel mr-2"></i> Xuất Excel
+                </a>
+                <a href="{{ route('transactions.export.csv', request()->all()) }}" 
+                   class="bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-4 rounded-md flex items-center transition duration-150 ease-in-out">
+                    <i class="fas fa-file-csv mr-2"></i> Xuất CSV
+                </a>
+                <a href="{{ route('transactions.export.pdf', request()->all()) }}" 
+                   class="bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-4 rounded-md flex items-center transition duration-150 ease-in-out">
+                    <i class="fas fa-file-pdf mr-2"></i> Xuất PDF
+                </a>
+            </div>
+        </div>
     </main>
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        // Add JavaScript for date range functionality
+        document.getElementById('dateRange').addEventListener('change', function() {
+            const customContainer = document.getElementById('customDateContainer');
+            if (this.value === 'custom') {
+                customContainer.classList.remove('hidden');
+            } else {
+                customContainer.classList.add('hidden');
+            }
+        });
+
+        document.getElementById('applyDateFilter').addEventListener('click', function() {
+            const dateRange = document.getElementById('dateRange').value;
+            const startDate = document.getElementById('startDate').value;
+            const endDate = document.getElementById('endDate').value;
+            
+            let url = new URL(window.location.href);
+            url.searchParams.set('date_range', dateRange);
+            
+            if (dateRange === 'custom') {
+                if (startDate) url.searchParams.set('start_date', startDate);
+                if (endDate) url.searchParams.set('end_date', endDate);
+            } else {
+                url.searchParams.delete('start_date');
+                url.searchParams.delete('end_date');
+            }
+            
+            window.location.href = url.toString();
+        });
+    </script>
 @endsection
