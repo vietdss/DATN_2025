@@ -171,7 +171,7 @@ export class MapHandler {
 
   async fetchAddress(lat, lng) {
     try {
-      const response = await fetch(`/api/geocode/reverse?lat=${lat}&lon=${lng}`);
+      const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`)
       const data = await response.json()
       return data.display_name || "Không tìm thấy địa chỉ"
     } catch {
@@ -252,7 +252,7 @@ export class MapHandler {
     }
 
     try {
-      const response = await fetch(`/api/geocode/search?q=${encodeURIComponent(query)}&limit=5`);
+      const response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=5`);
       const data = await response.json();
 
       this.addressSuggestions.innerHTML = "";
