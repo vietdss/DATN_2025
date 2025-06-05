@@ -6,7 +6,7 @@ use Illuminate\Support\Collection;
 use Phpml\FeatureExtraction\TfIdfTransformer;
 use Phpml\FeatureExtraction\TokenCountVectorizer;
 use Phpml\Tokenization\WhitespaceTokenizer;
-use Phpml\Math\Distance\Euclidean;
+use App\Services\Distance\Cosine;
 
 class RecommendationService
 {
@@ -44,18 +44,19 @@ class RecommendationService
         $vectorizer->transform($targetText);
         $tfIdfTransformer->transform($targetText);
 
-        // Tính khoảng cách Euclidean
-        $euclidean = new Euclidean();
+        // Tính khoảng cách cosine
+        $cosine = new Cosine();
         $distances = [];
 
         foreach ($corpus as $index => $vec) {
+            $distance = $cosine->distance($targetText[0], $vec); // cosine trả về 1 - similarity
             $distances[] = [
                 'item' => $itemMap[$index],
-                'distance' => $euclidean->distance($targetText[0], $vec),
+                'distance' => $distance,
             ];
         }
 
-        // Sắp xếp tăng dần theo khoảng cách
+        // Sắp xếp tăng dần theo khoảng cách (giống → gần 0)
         usort($distances, fn($a, $b) => $a['distance'] <=> $b['distance']);
 
         // Lấy top K
